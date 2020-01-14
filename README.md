@@ -60,3 +60,15 @@ PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 ```
 New-Fixture -Path $env:USERPROFILE\Documents\WindowsPowerShell\Modules\FizzBuzz -Name FizzBuzz
 ```
+
+# すべての*ps1ファイルをUTF-8 BOMつきに変換する
+
+BOM無しのUTF-8で作った.ps1ファイルをPesterで実行したらメッセージのなかの日本語文字が化けてしまいました。どうやら .ps1 ファイルはUTF-8 BOMつきでなければならないようです。
+
+下記の記事を参考に、あるフォルダ配下のすべての.PS1ファイルをBOM有りUTF-8に変換するPowerShellスクリプトを用意しました。
+
+[WindowsですべてのUTF-8ファイルにBOMを付ける、たったひとつの冴えたやり方](https://qiita.com/aokomoriuta/items/b1182d310ec4ef2d76b7)
+
+```
+get-childitem * -include *.ps1 -Recurse | foreach-object {((&{if ((Compare-Object (get-content $_.FullName -encoding byte)[0..2] @(0xEF, 0xBB, 0xBF)).length -eq 0){ @() } else { ([byte[]] @(0xEF, 0xBB, 0xBF)) } }) + (get-content $_.FullName -encoding byte)) | set-content $_.FullName -encoding byte}
+```
