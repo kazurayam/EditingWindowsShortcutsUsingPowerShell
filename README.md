@@ -5,7 +5,11 @@ Windowsのショートカットを一括して書きかえたい、PowerShellで
 
 ## はじまり
 
-自分が関わる開発プロジェクトのSubversionレポジトリをGitHub Enterpriseへ移行する作業を始めた。そのプロジェクトはWindowsを前提しており、ファイルツリーのなかに約300個のショートカットがあった。ショートカットには属性としてリンク先があってそこにフォルダのパスが絶対パスで書いてあった。たとえば `C:\SVNReposX\contents\aaaa\code` のように。いっぽうGitレポジトリを `C:\GheReposX` の下に作ってSubversionから移行した。するとショートカットのリンク先が `C:\SVNReposX\...` だから切れてしまった。リンク切れを解消しなければならない。
+自分が関わる開発プロジェクトのSubversionレポジトリをGitHub Enterpriseへ移行する作業を始めた。そのプロジェクトはWindowsを前提しており、ファイルツリーのなかに約300個のショートカットがあった。ショートカットには属性としてリンク先があって、フォルダのパスが絶対パスで書いてあった。たとえば `C:\SVNReposX\contents\aaaa\code` のように。わたしはGitレポジトリを `C:\GheReposX` の下に作ってSubversionから移行したのだが、ショートカットのリンク先が `C:\SVNReposX\...` と書いてあって `C:\GheReposX\...` とは書いていない。つまりショートカットがリンク切れの状態になった。Windowsエクスプローラーでショートカットをダブルクリックすると下記のようなエラーになった。
+
+![場所が利用できません](docs/images/brokenLink.png)
+
+リンク切れを解消しなければならない。
 
 ## 技術要素としての問題
 
@@ -33,11 +37,11 @@ PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 
 ## 環境
 
-- Windows 10
-- .NET Framework
-- PowerShell
-- Visual Studio Code
-- Pester
+- Windows 10 Pro
+- .NET Framework (ver 4.7.03190)
+- PowerShell (プログラミング言語)
+- Visual Studio Code (エディタ)
+- Pester (PowerShellのユニット・テストframework)
 
 ## テストの実行
 
@@ -51,6 +55,16 @@ PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 
 # 参考情報
 
+## PowerShell言語に組み込まれたPathにかんするコマンドレット
+
+- [@IT WindowsのPowerShellでパス文字列を操作する](https://www.atmarkit.co.jp/ait/articles/0809/12/news139.html)
+- [Convert-Path カレントフォルダを基点として、与えられた相対パスを絶対パスに変換する](https://forsenergy.com/ja-jp/windowspowershellhelp/html/60cd1f85-c580-454a-8df5-f8ec4ce44a34.htm)
+- [Join-Path パスと子パスを結合する](https://forsenergy.com/ja-jp/windowspowershellhelp/html/2c0230a1-fe6b-40f5-8fd2-926ce631b402.htm)
+- [Split-Path パスの要素を返す](https://forsenergy.com/ja-jp/windowspowershellhelp/html/efafd4b3-e5cf-4899-b693-3b4a0d91d01a.htm)
+- [Test-Path パスのすべての要素が存在するかどうかを確認する](https://forsenergy.com/ja-jp/windowspowershellhelp/html/bce28e12-dc29-4ffd-8f1c-28f877931ebf.htm)
+- [Resolve-Path ](https://forsenergy.com/ja-jp/windowspowershellhelp/html/69809773-ce6e-4128-9526-3eaf4b5dc6d5.htm)
+
+##
 - [Pesterを使ったPowerShellモジュールのテスト駆動開発](https://qiita.com/yuki451/items/68d4b1f0bc235f7f318d)
 - [PowerShellで絶対パスと相対パスを相互変換したい](https://qiita.com/yumura_s/items/0aed4c275432993e9174)
 - [PowerShell フォルダ内のファイル一覧を取得し、一括でファイル操作を行う](https://mseeeen.msen.jp/how-to-get-list-of-files-in-folder-with-powershell/)

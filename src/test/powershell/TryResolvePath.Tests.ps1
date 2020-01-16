@@ -1,19 +1,19 @@
 ﻿$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$scriptUnderTest = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.ps1', '.psm1'
-Import-Module "$here\$scriptUnderTest" -Force
+# $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path) -replace '\.Tests\.', '.'
+# . "$here\$sut"
 
-Describe "コマンドレット Resolve-Path を試す" {
+Describe "組み込みコマンドレット Resolve-Path を試す" {
     <#
     https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/resolve-path?view=powershell-7
     #>
-    It "絶対パスから相対パスへの変換" {
-        $base = "${env:USERPROFILE}\github"    # 基準となるパス
-        $abs  = "${env:USERPROFILE}\github\EditingWindowsShortcutsUsingPowerShell\README.md"    # 絶対パス
-        Push-Location $base
+    It "カレントフォルダを基底とする相対パスを絶対パスへ変換する" {
+        $currentDir = Get-Location
+        $base = Join-Path $currentDir ".\src\test\fixture"
+        $target = ".\subfolder\morelinkToAppData.lnk"
+        Push-Location -Path $base
         try {
-            Resolve-Path $abs -Relative | Should Be '.\EditingWindowsShortcutsUsingPowerShell\README.md'
-            $base | Test-Path
-            $abs  | Test-Path
+            Resolve-Path -Path $target | Should Match '^C:\\Users'cd
+            Resolve-Path -Path $target | Should Match '\\morelinkToAppData.lnk$'
         } finally {
             Pop-Location
         }
@@ -23,11 +23,17 @@ Describe "コマンドレット Resolve-Path を試す" {
         Push-LocationとPop-Locationを使うことによりカレントディレクトリに影響を与えずにパスの変換処理を実行することができる。
         #>
     }
-    It "相対パスから絶対パスへの変換例" {
-        $base = "X:\foo\bar\"
-        $rltv = "..\baz.txt"
-        $rltv | Convert-LocalPath -Location $base | Should Be "X:\foo\baz.txt"
-        $base | Test-Path
-        $rltv | Convert-LocalPath -Location $base | Test-Path
+
+    It "絶対パスをうけとって、.\src\test\fixture\powershellフォルダを基底とする相対パスへ変換する" {
+        $currentDir = Get-Location
+        $base = Join-Path $currentDir ".\src\test\fixture"
+        $target = Join-Path $currentDir "${base}\subfolder\linkToAppData.lnk"
+        Push-Location -Path $base
+        try {
+            Resolve-Path -Path $target -Relative | Should Be '.\subfolder\linkToAppData.lnk'
+        } finally {
+            Pop-Loation
+        }
+
     }
 }
