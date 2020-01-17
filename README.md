@@ -45,7 +45,7 @@ PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 
 ## テストの実行
 
-VS CodeのTerminalを使う。
+Visal Studio CodeのTerminalを使う。
 
 ```
 PS C:\...> cd <EditingWindowsShortCutsUsingPowerShellのフォルダ>
