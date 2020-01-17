@@ -8,12 +8,15 @@ Describe "組み込みコマンドレット Resolve-Path を試す" {
     #>
     It "カレントフォルダを基底とする相対パスを絶対パスへ変換する" {
         $currentDir = Get-Location
-        $base = Join-Path $currentDir ".\src\test\fixture"
-        $target = ".\subfolder\morelinkToAppData.lnk"
+        # Write-Host "currentDir is ${currentDir}"
+        $base = Join-Path $currentDir "src\test\fixture"
+        # Write-Host "base is ${base}"
+        $target = "subfolder\moreLinkToAppData.lnk"
+        # Write-Host "target is ${target}"
         Push-Location -Path $base
         try {
             Resolve-Path -Path $target | Should Match '^C:\\Users'cd
-            Resolve-Path -Path $target | Should Match '\\morelinkToAppData.lnk$'
+            Resolve-Path -Path $target | Should Match '\\moreLinkToAppData.lnk$'
         } finally {
             Pop-Location
         }
@@ -26,13 +29,13 @@ Describe "組み込みコマンドレット Resolve-Path を試す" {
 
     It "絶対パスをうけとって、.\src\test\fixture\powershellフォルダを基底とする相対パスへ変換する" {
         $currentDir = Get-Location
-        $base = Join-Path $currentDir ".\src\test\fixture"
-        $target = Join-Path $currentDir "${base}\subfolder\linkToAppData.lnk"
+        $base = Join-Path $currentDir "src\test\fixture"
+        $target = Join-Path $base "subfolder\moreLinkToAppData.lnk"
         Push-Location -Path $base
         try {
-            Resolve-Path -Path $target -Relative | Should Be '.\subfolder\linkToAppData.lnk'
+            Resolve-Path -Path $target -Relative | Should Be '.\subfolder\moreLinkToAppData.lnk'
         } finally {
-            Pop-Loation
+            Pop-Location
         }
 
     }
