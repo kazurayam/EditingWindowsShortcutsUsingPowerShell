@@ -39,8 +39,8 @@ Describe "Windowsショートカットにたいして様々の操作を試す" {
             $new.targetPath = $targetPath
             $new.save()
             # ショートカットのtargetPathが期待した値に変更されているかどうか確かめる
-            $sht = $wsh.createShortcut($path)
-            $sht.targetPath | Should Match 'Chrome$'
+            $shrt = $wsh.createShortcut($path)
+            $shrt.targetPath | Should Match 'Chrome$'
         }
     }
 
@@ -56,8 +56,8 @@ Describe "Windowsショートカットにたいして様々の操作を試す" {
                 $new.targetPath = $targetPath
                 $new.save()
                 # ショートカットのtargetPathが期待した値に変更されているかどうか確かめる
-                $sht = $wsh.createShortcut($path)
-                $sht.targetPath | Should Match 'Chrome$'
+                $shrt = $wsh.createShortcut($path)
+                $shrt.targetPath | Should Match 'Chrome$'
             }
         }
     }
@@ -67,8 +67,11 @@ Describe "Windowsショートカットにたいして様々の操作を試す" {
         # 各テストがfixtureを変更しても他テストに影響を及ぼさないようにするため
         $source = Join-Path $currentDir "src/test/fixture"
         $destination = $workDir
-        # destionationディレクトリを削除し再作成する
-        Remove-Item $destination -Force -Recurse
+        # destionationディレクトリがすでにあったらそれを削除する
+        if (Test-Path $destination) {
+            Remove-Item $destination -Force -Recurse
+        }
+        # destinationディレクトリを再作成する
         New-Item $destination -ItemType Directory
         # *.lnkファイルをsourceからdestinationへコピーする
         Get-ChildItem $source | Copy-Item -Filter *.lnk -Recurse -Destination $destination -Container 

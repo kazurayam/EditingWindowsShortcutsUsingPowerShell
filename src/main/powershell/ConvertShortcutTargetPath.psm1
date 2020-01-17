@@ -6,7 +6,7 @@
         
         [Parameter(Mandatory=$true)]
         [string]
-        $Regex,
+        $Regexp,
         
         [Parameter(Mandatory=$true)]
         [string]
@@ -15,7 +15,6 @@
         [Parameter(Mandatory=$false)]
         [switch]
         $Dryrun=$false
-
     )
 
     <#
