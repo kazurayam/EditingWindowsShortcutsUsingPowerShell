@@ -50,61 +50,50 @@
         .LINK
     #>
 
-    begin
-    {
-    }
+    
+    # Windows Script Host
+    $wsh = New-Object -ComObject WScript.shell
 
-    process
-    {
-        # Windows Script Host
-        $wsh = New-Object -ComObject WScript.shell
-
-        $result = $true
-        if (Test-Path -Path $Shortcut) {
-            if ($Shortcut -Match '\.lnk') {
-                $countAllShortcuts += 1
-                try {
-                    $shrt = $wsh.createShortcut($Shortcut)
-                    $replaced = $shrt.targetPath -replace $Regexp, $Replacement
-                    if ((Test-Path $replaced)) {
-                        if ($Dryrun) {
-                            # calculate the replacement and check if the file exists
-                            <#
-                                Write-Host "  Shortcut: ${Shortcut}"
-                                Write-Host "    target path: $($shrt.targetPath)"
-                                Write-Host "    replaced to: ${replaced}"
-                                Write-Host ""
-                            #>
-                        } else {
-                            # overwrite the shortcut with the replaced targetPath
-                            $new = $wsh.createShortcut($Shortcut)
-                            $new.targetPath = $replaced
-                            $new.save()
-                        }
+    $result = $true
+    if (Test-Path -Path $Shortcut) {
+        if ($Shortcut -Match '\.lnk') {
+            $countAllShortcuts += 1
+            try {
+                $shrt = $wsh.createShortcut($Shortcut)
+                $replaced = $shrt.targetPath -replace $Regexp, $Replacement
+                if ((Test-Path $replaced)) {
+                    if ($Dryrun) {
+                        # calculate the replacement and check if the file exists
+                        <#
+                            Write-Host "  Shortcut: ${Shortcut}"
+                            Write-Host "    target path: $($shrt.targetPath)"
+                            Write-Host "    replaced to: ${replaced}"
+                            Write-Host ""
+                        #>
                     } else {
-                        Write-Warning "  Shortcut: ${Shortcut}"
-                        Write-Warning "    target path: $($shrt.targetPath)"
-                        Write-Warning "    replaced to: ${replaced} <= does not exist"
-                        Write-Warning ""
-                        $result = $false
+                        # overwrite the shortcut with the replaced targetPath
+                        $new = $wsh.createShortcut($Shortcut)
+                        $new.targetPath = $replaced
+                        $new.save()
                     }
-                } catch {
-                    Write-Warning $_.Exception.Message
+                } else {
+                    Write-Warning "  Shortcut: ${Shortcut}"
+                    Write-Warning "    target path: $($shrt.targetPath)"
+                    Write-Warning "    replaced to: ${replaced} <= does not exist"
+                    Write-Warning ""
                     $result = $false
                 }
-            } else {
-                Write-Warning "${Shortcut} does not ends with .lnk"
+            } catch {
+                Write-Warning $_.Exception.Message
                 $result = $false
             }
         } else {
-            Write-Warning "${Shortcut} is not found"
+            Write-Warning "${Shortcut} does not ends with .lnk"
             $result = $false
         }
-        $result
+    } else {
+        Write-Warning "${Shortcut} is not found"
+        $result = $false
     }
-
-    end
-    {
-    }
-
+    $result
 }
