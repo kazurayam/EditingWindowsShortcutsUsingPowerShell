@@ -40,7 +40,7 @@ PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 - Windows 10 Pro
 - .NET Framework (ver 4.7.03190)
 - PowerShell (プログラミング言語)
-- Visual Studio Code (エディタ)
+- Visual Studio Code (エディタ　ver 1.41)
 - Pester (PowerShellのユニット・テストframework)
 
 ## テストの実行
@@ -48,7 +48,6 @@ PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 Visal Studio CodeのTerminalを使う。
 
 ```
-PS C:\...> cd <EditingWindowsShortCutsUsingPowerShellのフォルダ>
 PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 ```
 
@@ -75,7 +74,10 @@ PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 New-Fixture -Path $env:USERPROFILE\Documents\WindowsPowerShell\Modules\FizzBuzz -Name FizzBuzz
 ```
 
-# すべての*ps1ファイルをUTF-8 BOMつきに変換する
+# 困ったこと
+
+## BOM無しのUTF-8で作った.ps1ファイルを実行したら日本語が文字化けした
+
 
 BOM無しのUTF-8で作った.ps1ファイルをPesterで実行したらメッセージのなかの日本語文字が化けてしまいました。どうやら .ps1 ファイルはUTF-8 BOMつきでなければならないようです。
 
@@ -86,3 +88,34 @@ BOM無しのUTF-8で作った.ps1ファイルをPesterで実行したらメッ�
 ```
 get-childitem * -include *.ps1 -Recurse | foreach-object {((&{if ((Compare-Object (get-content $_.FullName -encoding byte)[0..2] @(0xEF, 0xBB, 0xBF)).length -eq 0){ @() } else { ([byte[]] @(0xEF, 0xBB, 0xBF)) } }) + (get-content $_.FullName -encoding byte)) | set-content $_.FullName -encoding byte}
 ```
+
+## Visual Studio Codeのエディタでテキストファイルを編集してCtrl+Sしたが保存されなかった
+
+*.ps1ファイルをエディタで修正し、Pesterでテストしようとした。テストを実行したあとで気づいたのだが、Pesterが実行した*.ps1ファイルはエディタで修正したバージョンではなくて、変更前のコードだ。
+
+VS CodeでCtrl＋Sした直後にExplorerで.ps1ファイルを開いてみた。あれ、ちゃんと変更箇所が保存されている。ではInvoke-Pesterしてみよう。
+
+あれ? Pesterは変更される前の*.ps1ファイルを読んで動いている。
+
+PesterがGitのHEADからファイルを読んでいてワーキングディレクトリのファイルを無視しているようにみえる。なんだこりゃ？
+
+いろいろ試行錯誤してわかったこと。
+
+VS Codeで*.ps1のコードを修正したあとで、その時開いていた ターミナル をcloseし、新しい ターミナル を開いて、そのなかでInvoke-Pesterを実行した。そしたらPesterが修正後の*.ps1ファイルを読んで動いた。ってことはVS Codeのターミナルがなんらか、キャッシュのようなものを内部で作っているらしい。
+
+VS Code でnew Terminalを開いたときに何がシェルとして動くか？MacではOS組み込みのTerminalが動く。Windowsでは ... PowerShellが開く。
+
+*.ps1ファイルをキャッシュしているのはPowerShellのインタプリタらしい。
+
+http://flamework.net/powershell-%E3%81%AE%E8%B5%B7%E5%8B%95%E3%82%92%E9%AB%98%E9%80%9F%E5%8C%96%E3%81%99%E3%82%8B/　がのべるように、.NETFRAMEWORKで構成されたアプリケーションたとえば*.ps1のPowerShellスクリプトはJITコンパイラによるマシン語への変換が必要だ。
+
+JITによるコンパイルを促すために、new terminalすればいい、ってことなんじゃないか？
+
+
+
+
+
+
+
+dffdfd
+
