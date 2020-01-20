@@ -9,9 +9,14 @@ Describe "Convert-ShortcutTargetPath関数をテストする" {
 
     $workDir = Join-Path $currentDir "build\tmp\testOutput\ConvertShortcutTargetPath"
 
-    It "ひとつのショートカットのtargetPathを書きかえる操作をDryrunする" {
+    It "ひとつのショートカットのtargetPathを書きかえる操作をDryrunする --- 書き換えた結果のディレクトリが存在する場合" {
         $path = Join-Path $workDir "subfolder\moreLinkToAppData.lnk"
         (Convert-ShortcutTargetPath -Shortcut $path -Regexp 'AppData$' -Replacement 'AppData\Roaming\Google\Chrome' -Dryrun) | Should Be $true
+    }
+    
+    It "ひとつのショートカットのtargetPathを書きかえる操作をDryrunする --- 書き換えた結果のディレクトリが存在しない場合" {
+        $path = Join-Path $workDir "subfolder\moreLinkToAppData.lnk"
+        (Convert-ShortcutTargetPath -Shortcut $path -Regexp 'AppData$' -Replacement 'AppData\Roaming\Google\FOOBAR' -Dryrun) | Should Be $false
     }
 
     BeforeEach {

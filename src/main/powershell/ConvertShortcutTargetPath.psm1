@@ -41,7 +41,7 @@
         .OUTPUTS
         overwrites the shortcut at the -ShortcutParemter 
 
-        .EXAMPLE
+       .EXAMPLE
         C:\PS .\Convert-ShortcutTargetPath -Shortcut "C:\Users\myname\EditingWindowsShortcutsUsingPowerShell\build\tmp\testOutput\ConvertShotcutTragetPath\linkToAppData.lnk" -Regexp 'AppData$' -Replacement 'AppData\Roaming\Google\Chrome'
 
         .LINK
@@ -50,6 +50,10 @@
     # Windows Script Host
     $wsh = New-Object -ComObject WScript.shell
     
+    if ($Dryrun) {
+        Write-Host "Dry run ..."
+    }
+
     $result = $true
     if (Test-Path -Path $Shortcut) {
         if ($Shortcut -Match '\.lnk') {
@@ -59,8 +63,9 @@
                 if ((Test-Path $replaced)) {
                     if ($Dryrun) {
                         # calculate the replacement and check if the file exists
+                        Write-Host ""
                         Write-Host "  Shortcut: ${Shortcut}"
-                        Write-Host "    target path: ${$shortcut.targetPath}"
+                        Write-Host "    target path: $($shrt.targetPath)"
                         Write-Host "    replaced to: ${replaced}"
                     } else {
                         # overwrite the shortcut with the replaced targetPath
@@ -69,21 +74,22 @@
                         $new.save()
                     }
                 } else {
-                    Write-Host "! Shortcut: ${Shortcut}"
-                    Write-Host "    target path: ${$shortcut.targetPath}"
-                    Write-Host "    replaced to: ${replaced} <= does not exist"
+                    Write-Warning ""
+                    Write-Warning "  Shortcut: ${Shortcut}"
+                    Write-Warning "    target path: $($shrt.targetPath)"
+                    Write-Warning "    replaced to: ${replaced} <= does not exist"
                     $result = $false
                 }
             } catch {
-                Write-Host $.Exception.Message
+                Write-Warning $_.Exception.Message
                 $result = $false
             }
         } else {
-            Write-Host "${Shortcut} does not ends with .lnk"
+            Write-Warning "${Shortcut} does not ends with .lnk"
             $result = $false
         }
     } else {
-        Write-Host "${Shortcut} is not found"
+        Write-Warning "${Shortcut} is not found"
         $result = $false
     }
 
