@@ -17,10 +17,13 @@ $targetProjectDir = 'C:\HomePageServices'
 $countAll = 0
 $countFailures = 0
 Get-ChildItem $targetProjectDir -Recurse -Filter *.lnk | ForEach-Object {
-    $sc = $_.FullName
-    Convert-ShortcutTargetPath -Shortcut $sc -Regexp '^C:\\VirtualInfraSVN' -Replacement 'C:\HomePageServices' -Dryrun
+    $countAll += 1
+    $result = Convert-ShortcutTargetPath -Shortcut $_.FullName -Regexp '^C:\\VirtualInfraSVN' -Replacement 'C:\HomePageServices' -Dryrun
+    if (!$result) {
+        $countFailures += 1
+        Write-Host ""
+    }
 }
 
-Write-Host ""
 Write-Host "Total: ${countAll}, Passed: $($countAll - $countFailures), Failed: ${countFailures}"
 

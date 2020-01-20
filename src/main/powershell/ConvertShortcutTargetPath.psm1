@@ -68,7 +68,6 @@
                             Write-Host "  Shortcut: ${Shortcut}"
                             Write-Host "    target path: $($shrt.targetPath)"
                             Write-Host "    replaced to: ${replaced}"
-                            Write-Host ""
                         #>
                     } else {
                         # overwrite the shortcut with the replaced targetPath
@@ -80,7 +79,6 @@
                     Write-Warning "  Shortcut: ${Shortcut}"
                     Write-Warning "    target path: $($shrt.targetPath)"
                     Write-Warning "    replaced to: ${replaced} <= does not exist"
-                    Write-Warning ""
                     $result = $false
                 }
             } catch {
