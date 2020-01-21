@@ -1,22 +1,24 @@
-Windowsのショートカットを一括して書きかえたい、PowerShellで
+Windowsのショートカットのリンク先を書きかえたい、PowerShellでバッチ的に書きかえよう
 ==============
 
 # 解決すべき問題
 
-## はじまり
+## そもそも何が問題だったかというと
 
-自分が関わる開発プロジェクトのSubversionレポジトリをGitHub Enterpriseへ移行する作業を始めた。そのプロジェクトはWindowsを前提しており、ファイルツリーのなかに約300個のショートカットがあった。ショートカットには属性としてリンク先があって、フォルダのパスが絶対パスで書いてあった。たとえば `C:\SVNReposX\contents\aaaa\code` のように。わたしはGitレポジトリを `C:\GheReposX` の下に作ってSubversionから移行したのだが、ショートカットのリンク先が `C:\SVNReposX\...` と書いてあって `C:\GheReposX\...` とは書いていない。つまりショートカットがリンク切れの状態になった。Windowsエクスプローラーでショートカットをダブルクリックすると下記のようなエラーになった。
+自分が関わる開発プロジェクトのSubversionレポジトリをGitHub Enterpriseへ移行する作業を始めた。そのプロジェクトはWindowsを前提しており、ファイルツリーのなかに数百個のショートカットがあった。ショートカットには属性としてリンク先があって、フォルダのパスが絶対パスで書いてあった。たとえば `C:\SVNReposX\contents\aaaa\code` のように。わたしはGitレポジトリを `C:\GheReposX` の下に作ってSubversionからコンテンツを移行した。このままではショートカットのリンク先が `C:\SVNReposX\...` だ。このままではまずい。というのもWindowsエクスプローラーでショートカットをダブルクリックすると下記のようなエラーになったから。
 
 ![場所が利用できません](docs/images/brokenLink.png)
 
-リンク切れを解消しなければならない。
+SubversionからGitに移行したプロジェクトのなかにあるショートカットのリンク先を `C:\SVNRepos` で始まる文字列から `C:\GheReposX` で始まる文字列に書き換えなければならない。
 
-## 技術要素としての問題
+## 要素問題
 
 1. あるフォルダの下にあるショートカット（ファイル名の末尾が`.lnk`であるファイル）を一括して取得したい
-2. ショートカットのリンク先がいまどういう値に設定されているかをREADしたい。
-3. リンク先(フォルダ)のリンク先が絶対パスであるならば、ショートカット自身を基底とする相対パスに変換したい
-4. リンク先を更新したショートカットのをWRITEしたい。
+2. ショートカットを読んでリンク先がいまどういう値に設定されているかを調べたい。
+3. リンク先に含まれる或る文字列を別の文字列に置換したい
+4. 置換後のリンク先を持つショートカットをファイルにWRITEしたい。
+5. 置換後のリンク先がファイルないしディレクトリとして実際に存在するかどうかを調べ、もしも存在しなければ警告メッセージを出力したい
+5. ツールにはdry runモードを持たせたい。つまりショートカットを列挙してリンク先をどう書き換えるかの計算まで実行するが、ただしショートカットを更新することは差し控えるという動きを実現したい。デバッグするのに便利だから。
 
 ## 絶対パスか相対パスか
 
@@ -26,14 +28,19 @@ Windowsのショートカットを一括して書きかえたい、PowerShellで
 
 しかしながらショートカットを新規に作るにはふつうWindowsのエクスプローラーで右クリックして *新規作製 > ショートカット* とやるが、そのやり方では **リンク先に必ず絶対パスが設定される。** ふつうのやり方でショートカットのリンク先に相対パスを指定することはできない。だからショートカットを相対パスで指定するというやり方は可能ではあるがじっさい運用できないといわざるをえない。
 
-いまわたしがショートカットのリンク先を書きかえるツールを作るならば、絶対パスを相対パスに書きかえるのではなく、与えられた絶対パスを別の絶対パスに書きかえることができるツールを作るほうが実用的だ。
+いまわたしがショートカットのリンク先を書きかえるツールを作るあたって、絶対パスを相対パスに書きかえるのではなく、与えられた絶対パスを別の絶対パスに書きかえることができるツールを作るほうが実用的だと考えた。
 
 # 解決方法
 
 PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 
-
 # 説明
+
+## ソースコードの在りか
+
+- [src/main/powershell/ConvertShortcutTargetPath.psm1](src/main/powershell/ConvertShortcutTargetPath.psm1) : Convert-ShortcutTargetPath関数の実装
+- [src/main/powershell/batch.ps1](src/main/powershell/batch.ps1) : あるフォルダの下にあるショートカット群にたいしConvert-ShortcutTargetPath関数を適用してリンク先を書きかえるPowerScript
+- [src/test/powershell/ConvertShortcutTargetPath.Tests.ps1](src/test/powershell/ConvertShortcutTargetPath.ps1) : Convert-ShortcutTargetPath関数をユニットテストするコード by Pester
 
 ## 環境
 
@@ -43,7 +50,7 @@ PowerShellでスクリプトを書こう。ぜんぶ解決できる。
 - Visual Studio Code (エディタ　ver 1.41)
 - Pester (PowerShellのユニット・テストframework)
 
-## テストの実行
+## テストをどうやって実行するか
 
 Visal Studio CodeのTerminalを使う。
 
@@ -51,8 +58,16 @@ Visal Studio CodeのTerminalを使う。
 PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 ```
 
+## バッチ処理をどうやって実行するか
 
-# 参考情報
+Visual Studio CodeのTerminalを使う。
+
+```
+PS C:\...\EditingWindowsShortCutsUsingPowerShell> src/main/powershell/batch.ps1
+```
+
+
+# 参考にした情報
 
 ## PowerShell言語に組み込まれたPathにかんするコマンドレット
 
@@ -62,60 +77,34 @@ PS C:\...\EditingWindowsShortCutsUsingPowerShell> Invoke-Pester
 - [Split-Path パスの要素を返す](https://forsenergy.com/ja-jp/windowspowershellhelp/html/efafd4b3-e5cf-4899-b693-3b4a0d91d01a.htm)
 - [Test-Path パスのすべての要素が存在するかどうかを確認する](https://forsenergy.com/ja-jp/windowspowershellhelp/html/bce28e12-dc29-4ffd-8f1c-28f877931ebf.htm)
 - [Resolve-Path ](https://forsenergy.com/ja-jp/windowspowershellhelp/html/69809773-ce6e-4128-9526-3eaf4b5dc6d5.htm)
-
-##
 - [Pesterを使ったPowerShellモジュールのテスト駆動開発](https://qiita.com/yuki451/items/68d4b1f0bc235f7f318d)
 - [PowerShellで絶対パスと相対パスを相互変換したい](https://qiita.com/yumura_s/items/0aed4c275432993e9174)
 - [PowerShell フォルダ内のファイル一覧を取得し、一括でファイル操作を行う](https://mseeeen.msen.jp/how-to-get-list-of-files-in-folder-with-powershell/)
 
 
-
-```
-New-Fixture -Path $env:USERPROFILE\Documents\WindowsPowerShell\Modules\FizzBuzz -Name FizzBuzz
-```
-
-# 困ったこと
+# 困ったことと解決方法
 
 ## BOM無しのUTF-8で作った.ps1ファイルを実行したら日本語が文字化けした
 
+.ps1ファイルをPesterで実行したらPesterが出力したメッセージのなかの日本語文字が化けてしまった。ファイルの文字エンコーディングがBOM無しのUTF-8になっている。.ps1ファイルはUTF-8 BOMつきでなければならないようです。
 
-BOM無しのUTF-8で作った.ps1ファイルをPesterで実行したらメッセージのなかの日本語文字が化けてしまいました。どうやら .ps1 ファイルはUTF-8 BOMつきでなければならないようです。
+下記の記事を参考に、あるフォルダ配下のすべての.PS1ファイルをBOM有りUTF-8に変換するPowerShellスクリプトを用意して実行した。
 
-下記の記事を参考に、あるフォルダ配下のすべての.PS1ファイルをBOM有りUTF-8に変換するPowerShellスクリプトを用意しました。
-
-[WindowsですべてのUTF-8ファイルにBOMを付ける、たったひとつの冴えたやり方](https://qiita.com/aokomoriuta/items/b1182d310ec4ef2d76b7)
+- [WindowsですべてのUTF-8ファイルにBOMを付ける、たったひとつの冴えたやり方](https://qiita.com/aokomoriuta/items/b1182d310ec4ef2d76b7)
 
 ```
-get-childitem * -include *.ps1 -Recurse | foreach-object {((&{if ((Compare-Object (get-content $_.FullName -encoding byte)[0..2] @(0xEF, 0xBB, 0xBF)).length -eq 0){ @() } else { ([byte[]] @(0xEF, 0xBB, 0xBF)) } }) + (get-content $_.FullName -encoding byte)) | set-content $_.FullName -encoding byte}
+get-childitem * -include *.ps1,*.psm1 -Recurse | foreach-object {((&{if ((Compare-Object (get-content $_.FullName -encoding byte)[0..2] @(0xEF, 0xBB, 0xBF)).length -eq 0){ @() } else { ([byte[]] @(0xEF, 0xBB, 0xBF)) } }) + (get-content $_.FullName -encoding byte)) | set-content $_.FullName -encoding byte}
 ```
 
-## Visual Studio Codeのエディタでテキストファイルを編集してCtrl+Sしたが保存されなかった
+## Visual Studio Codeのエディタで .ps1 ファイルを更新してCtrl+SしたあとPesterを実行したら、更新される前の .ps1 の内容が参照されてしまい更新後のコードをテストできなかった
 
-*.ps1ファイルをエディタで修正し、Pesterでテストしようとした。テストを実行したあとで気づいたのだが、Pesterが実行した*.ps1ファイルはエディタで修正したバージョンではなくて、変更前のコードだ。
+.ps1 ファイルをエディタで修正し、VS Codeの「ターミナル」のなかで Invoke-Pester した。やってみるとエディタで修正後の.ps1ファイルではなく変更前のコードがPesterによって参照された。
 
-VS CodeでCtrl＋Sした直後にExplorerで.ps1ファイルを開いてみた。あれ、ちゃんと変更箇所が保存されている。ではInvoke-Pesterしてみよう。
+ファイルを更新するためCtrl+Sをしたのにファイルがディスクに保存されていないのか？最初そのように疑った。しかし別のエディタで開いてみると .ps1 ファイルはたしかにCtrl+Sで更新されていた。... ではInvoke-Pesterしてみよう。... あれ? Pesterは変更される前の*.ps1ファイルの内容を実行している。
 
-あれ? Pesterは変更される前の*.ps1ファイルを読んで動いている。
+試行錯誤した。
 
-PesterがGitのHEADからファイルを読んでいてワーキングディレクトリのファイルを無視しているようにみえる。なんだこりゃ？
+VS Codeで*.ps1のコードを修正したあとで、その時開いていた ターミナル をcloseし、新しい ターミナル を開いて、そのなかでInvoke-Pesterを実行した。そしたらPesterが修正後の .ps1ファイルを読んで動いた。
 
-いろいろ試行錯誤してわかったこと。
-
-VS Codeで*.ps1のコードを修正したあとで、その時開いていた ターミナル をcloseし、新しい ターミナル を開いて、そのなかでInvoke-Pesterを実行した。そしたらPesterが修正後の*.ps1ファイルを読んで動いた。ってことはVS Codeのターミナルがなんらか、キャッシュのようなものを内部で作っているらしい。
-
-VS Code でnew Terminalを開いたときに何がシェルとして動くか？MacではOS組み込みのTerminalが動く。Windowsでは ... PowerShellが開く。
-
-*.ps1ファイルをキャッシュしているのはPowerShellのインタプリタらしい。
-
-http://flamework.net/powershell-%E3%81%AE%E8%B5%B7%E5%8B%95%E3%82%92%E9%AB%98%E9%80%9F%E5%8C%96%E3%81%99%E3%82%8B/　がのべるように、.NETFRAMEWORKで構成されたアプリケーションたとえば*.ps1のPowerShellスクリプトはJITコンパイラによるマシン語への変換が必要だ。
-
-JITによるコンパイルを促すために、new terminalすればいい、ってことなんじゃないか？
-
-
-
-
-
-
-
-dffdfd
-
+どうやらエディタで修正した .ps1 スクリプトをPesterに渡すには、修正後の.ps1コードをJITコンパイラにコンパイルさせることが必要。そのためにはVS Codeのターミナルを新しく開けばいいらしい。PowerShellのコンパイルにかんして
+- [PowerShellの起動を高速化する](http://flamework.net/powershell-%E3%81%AE%E8%B5%B7%E5%8B%95%E3%82%92%E9%AB%98%E9%80%9F%E5%8C%96%E3%81%99%E3%82%8B/) を参考にした。
