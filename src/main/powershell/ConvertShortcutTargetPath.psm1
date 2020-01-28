@@ -1,4 +1,4 @@
-﻿function Convert-ShortcutTargetPath {
+function Convert-ShortcutTargetPath {
     param (
         [Parameter(ValueFromPipeline=$true, Mandatory=$true)]
         [string]

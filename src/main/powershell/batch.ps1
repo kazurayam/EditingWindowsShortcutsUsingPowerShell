@@ -1,4 +1,4 @@
-﻿$currentDir = Get-Location
+$currentDir = Get-Location
 $module = (Join-Path $currentDir 'src\main\powershell\ConvertShortcutTargetPath.psm1')
 Import-Module $module -function *
 

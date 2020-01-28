@@ -96,6 +96,15 @@ PS C:\...\EditingWindowsShortCutsUsingPowerShell> src/main/powershell/batch.ps1
 get-childitem * -include *.ps1,*.psm1 -Recurse | foreach-object {((&{if ((Compare-Object (get-content $_.FullName -encoding byte)[0..2] @(0xEF, 0xBB, 0xBF)).length -eq 0){ @() } else { ([byte[]] @(0xEF, 0xBB, 0xBF)) } }) + (get-content $_.FullName -encoding byte)) | set-content $_.FullName -encoding byte}
 ```
 
+### 訂正 at 28 Jan, 2020
+
+いままでわたしは Windows PowerShell 5.1 を使っていた。v5.1までは*.ps1ファイルの文字エンコーディングのデフォルト値がUTF-8 BOMつきだった。BOM無しUTF-8で作られた*.ps1ファイルをPesterが実行したときにそれがUTF-8 BOMつきであるはずだと誤解した結果、メッセージの文字化けが発生した。
+
+きのう習ったのだがPowerShell Core 6がとっくにリリースされていて今後はこれが本流であり、Windows PowerShell 5.1はいずれ廃れる運命にある。PowerShell v6では*.ps1ファイルの文字エンコーディングがBOM無しのUTF-8に変更された。だからPowerShell v6を使うかぎりはすべてのテキストファイルをBOM無しUTF-8で統一することができる。これで問題が根本的に解決される。
+
+VS CodeのなかでTerminalでPowerShell Core 6を使えるようにするには下記URLを参照のこと。
+- https://4sysops.com/archives/vscode-as-a-console-for-powershell-core-6-part-1-multiple-shells/
+
 ## Visual Studio Codeのエディタで .ps1 ファイルを更新してCtrl+SしたあとPesterを実行したら、更新される前の .ps1 の内容が参照されてしまい更新後のコードをテストできなかった
 
 .ps1 ファイルをエディタで修正し、VS Codeの「ターミナル」のなかで Invoke-Pester した。やってみるとエディタで修正後の.ps1ファイルではなく変更前のコードがPesterによって参照された。
