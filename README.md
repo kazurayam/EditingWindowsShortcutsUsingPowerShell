@@ -104,6 +104,7 @@ get-childitem * -include *.ps1,*.psm1 -Recurse | foreach-object {((&{if ((Compar
 
 VS CodeのなかでTerminalでPowerShell Core 6を使えるようにするには下記URLを参照のこと。
 - https://4sysops.com/archives/vscode-as-a-console-for-powershell-core-6-part-1-multiple-shells/
+- https://blog-and-destroy.com/25199
 
 ## Visual Studio Codeのエディタで .ps1 ファイルを更新してCtrl+SしたあとPesterを実行したら、更新される前の .ps1 の内容が参照されてしまい更新後のコードをテストできなかった
 
