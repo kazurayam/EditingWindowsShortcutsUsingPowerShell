@@ -57,7 +57,6 @@ function Convert-ShortcutTargetPath {
     $result = $true
     if (Test-Path -Path $Shortcut) {
         if ($Shortcut -Match '\.lnk') {
-            $countAllShortcuts += 1
             try {
                 $shrt = $wsh.createShortcut($Shortcut)
                 $replaced = $shrt.targetPath -replace $Regexp, $Replacement
